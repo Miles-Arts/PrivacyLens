@@ -1,0 +1,5 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     '/Volumes/INSIDER/XCODE/MeetXcode/build/Release/PrivaLock.app/Contents/MacOS/PrivaLock'
+relocations:     []
+...
