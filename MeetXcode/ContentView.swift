@@ -178,94 +178,79 @@ struct ContentView: View {
                                 }
                                 .pickerStyle(.segmented)
 
-                                ViewThatFits(in: .horizontal) {
-                                    // Modo horizontal para pantallas amplias (Mac, iPad, Landscape)
-                                    HStack(spacing: 14) {
-                                        Button {
-                                            isManualDrawingActive.toggle()
-                                        } label: {
-                                            Label(
-                                                isManualDrawingActive ? strings.cancelDrawingButton : strings.drawBoxButton,
-                                                systemImage: isManualDrawingActive ? "xmark.circle.fill" : "hand.draw.fill"
-                                            )
-                                            .font(.system(size: appFontSize, weight: .semibold))
-                                            .lineLimit(1)
-                                        }
-                                        .buttonStyle(.borderedProminent)
-                                        .tint(isManualDrawingActive ? .orange : .blue)
-
-                                        Spacer()
-
-                                        HStack(spacing: 8) {
-                                            Text(strings.globalStyleLabel)
-                                                .font(.system(size: appFontSize))
-                                                .foregroundStyle(.secondary)
-                                                .lineLimit(1)
-                                            
-                                            Picker("Estilo", selection: $selectedRedactionStyle) {
-                                                ForEach(RedactionStyle.allCases) { style in
-                                                    Label(style.rawValue, systemImage: style.iconName).tag(style)
-                                                }
-                                            }
-                                            .pickerStyle(.menu)
-                                            .lineLimit(1)
-                                            .fixedSize(horizontal: true, vertical: false)
-                                        }
-                                    }
-
-                                    // Modo compacto para pantallas móviles angostas (iPhone SE)
-                                    HStack(spacing: 8) {
-                                        Button {
-                                            isManualDrawingActive.toggle()
-                                        } label: {
-                                            Label(
-                                                isManualDrawingActive ? strings.cancelDrawingButton : strings.drawBoxButton,
-                                                systemImage: isManualDrawingActive ? "xmark.circle.fill" : "hand.draw.fill"
-                                            )
-                                            .font(.system(size: min(appFontSize, 13), weight: .semibold))
-                                            .lineLimit(1)
-                                            .minimumScaleFactor(0.8)
-                                        }
-                                        .buttonStyle(.borderedProminent)
-                                        .tint(isManualDrawingActive ? .orange : .blue)
-
-                                        Spacer()
-
-                                        // Botones de Deshacer y Rehacer (Undo / Redo)
+                                // Barra de Herramientas Compacta y Perfectamente Escalada para iPhone SE
+                                HStack(spacing: 6) {
+                                    // 1. Botón Dibujar Recuadro / Cancelar
+                                    Button {
+                                        isManualDrawingActive.toggle()
+                                    } label: {
                                         HStack(spacing: 4) {
-                                            Button {
-                                                undoLastAction()
-                                            } label: {
-                                                Image(systemName: "arrow.uturn.backward.circle.fill")
-                                                    .font(.system(size: 18))
-                                            }
-                                            .buttonStyle(.plain)
-                                            .foregroundStyle(undoStack.isEmpty ? Color.secondary.opacity(0.3) : Color.blue)
-                                            .disabled(undoStack.isEmpty)
-                                            .help(strings.undoButton)
-
-                                            Button {
-                                                redoLastAction()
-                                            } label: {
-                                                Image(systemName: "arrow.uturn.forward.circle.fill")
-                                                    .font(.system(size: 18))
-                                            }
-                                            .buttonStyle(.plain)
-                                            .foregroundStyle(redoStack.isEmpty ? Color.secondary.opacity(0.3) : Color.blue)
-                                            .disabled(redoStack.isEmpty)
-                                            .help(strings.redoButton)
+                                            Image(systemName: isManualDrawingActive ? "xmark.circle.fill" : "hand.draw.fill")
+                                                .font(.system(size: 13, weight: .bold))
+                                            Text(isManualDrawingActive ? strings.cancelDrawingButton : strings.drawBoxButton)
+                                                .font(.system(size: min(appFontSize, 12), weight: .semibold))
+                                                .lineLimit(1)
+                                                .minimumScaleFactor(0.8)
                                         }
-
-                                        Picker("", selection: $selectedRedactionStyle) {
-                                            ForEach(RedactionStyle.allCases) { style in
-                                                Label(style.rawValue, systemImage: style.iconName).tag(style)
-                                            }
-                                        }
-                                        .pickerStyle(.menu)
-                                        .labelsHidden()
-                                        .lineLimit(1)
-                                        .fixedSize(horizontal: true, vertical: false)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 6)
                                     }
+                                    .buttonStyle(.borderedProminent)
+                                    .tint(isManualDrawingActive ? .orange : .blue)
+
+                                    // 2. Botones de Deshacer y Rehacer (Undo / Redo)
+                                    HStack(spacing: 4) {
+                                        Button {
+                                            undoLastAction()
+                                        } label: {
+                                            Image(systemName: "arrow.uturn.backward.circle.fill")
+                                                .font(.system(size: 19))
+                                        }
+                                        .buttonStyle(.plain)
+                                        .foregroundStyle(undoStack.isEmpty ? Color.secondary.opacity(0.25) : Color.blue)
+                                        .disabled(undoStack.isEmpty)
+                                        .help(strings.undoButton)
+
+                                        Button {
+                                            redoLastAction()
+                                        } label: {
+                                            Image(systemName: "arrow.uturn.forward.circle.fill")
+                                                .font(.system(size: 19))
+                                        }
+                                        .buttonStyle(.plain)
+                                        .foregroundStyle(redoStack.isEmpty ? Color.secondary.opacity(0.25) : Color.blue)
+                                        .disabled(redoStack.isEmpty)
+                                        .help(strings.redoButton)
+                                    }
+
+                                    Spacer(minLength: 4)
+
+                                    // 3. Selector de Estilo de Redacción con Menú Desplegable Compacto
+                                    Menu {
+                                        ForEach(RedactionStyle.allCases) { style in
+                                            Button {
+                                                selectedRedactionStyle = style
+                                                HapticManager.selection()
+                                            } label: {
+                                                Label(style.rawValue, systemImage: style.iconName)
+                                            }
+                                        }
+                                    } label: {
+                                        HStack(spacing: 4) {
+                                            Image(systemName: selectedRedactionStyle.iconName)
+                                                .font(.system(size: 11))
+                                            Text(selectedRedactionStyle.rawValue)
+                                                .font(.system(size: min(appFontSize, 11), weight: .medium))
+                                                .lineLimit(1)
+                                            Image(systemName: "chevron.up.chevron.down")
+                                                .font(.system(size: 9))
+                                                .foregroundStyle(.secondary)
+                                        }
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 6)
+                                        .background(Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
+                                    }
+                                    .lineLimit(1)
                                 }
                             }
 
