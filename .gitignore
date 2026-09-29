@@ -1,0 +1,21 @@
+# Xcode
+## User settings
+xcuserdata/
+*.xcscmblueprint
+*.xccheckout
+
+## Build generated
+build/
+DerivedData/
+*.moved-aside
+*.xcuserstate
+
+## macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+## PrivaLock outputs
+*.ipa
+*.dSYM.zip
+*.dSYM
