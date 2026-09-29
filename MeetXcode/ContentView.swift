@@ -95,31 +95,41 @@ struct ContentView: View {
                     // MARK: - Lienzo Principal y Controles de Medios
                     if let loadedImage {
                         VStack(spacing: 18) {
-                            // Barra de Nombre de Archivo Personalizable y Contador
-                            HStack(spacing: 10) {
+                            // Barra de Nombre de Archivo Personalizable y Contador (Responsiva para iPhone SE)
+                            HStack(spacing: 6) {
                                 Image(systemName: "pencil.line")
                                     .foregroundStyle(.tint)
-                                
+                                    .font(.system(size: 14))
+
                                 Text(strings.fileNameLabel)
-                                    .font(.system(size: appFontSize, weight: .medium))
+                                    .font(.system(size: min(appFontSize, 13), weight: .medium))
                                     .foregroundStyle(.secondary)
+                                    .lineLimit(1)
+                                    .layoutPriority(1)
 
                                 TextField(strings.fileNamePlaceholder, text: $customExportFileName)
                                     .textFieldStyle(.roundedBorder)
-                                    .font(.system(size: appFontSize))
+                                    .font(.system(size: min(appFontSize, 13)))
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.8)
 
                                 Text(".jpg")
-                                    .font(.system(size: appFontSize))
+                                    .font(.system(size: min(appFontSize, 12)))
                                     .foregroundStyle(.secondary)
+                                    .layoutPriority(1)
 
                                 Button(role: .destructive) {
                                     clearSelectedMedia()
                                 } label: {
                                     Image(systemName: "trash.fill")
+                                        .font(.system(size: 15))
                                         .foregroundStyle(.red)
+                                        .padding(.horizontal, 2)
                                 }
+                                .buttonStyle(.plain)
+                                .layoutPriority(1)
                             }
-                            .padding(.horizontal, 4)
+                            .padding(.horizontal, 2)
 
                             // Barra de Navegación de Páginas para Documentos PDF Multipágina
                             if totalPDFPages > 1 {
@@ -318,7 +328,9 @@ struct ContentView: View {
                                         Image(systemName: "square.and.arrow.down.fill")
                                     }
                                     Text(strings.saveProtectedButton)
-                                        .font(.system(size: appFontSize + 2, weight: .bold))
+                                        .font(.system(size: min(appFontSize + 1, 16), weight: .bold))
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.8)
                                 }
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 14)
@@ -329,15 +341,17 @@ struct ContentView: View {
 
                             // Botones de Compartir, Imprimir, Copiar y Cambiar Foto
                             VStack(spacing: 12) {
-                                // Fila 1: Compartir e Imprimir
-                                HStack(spacing: 12) {
+                                // Fila 1: Compartir e Imprimir (Responsivo para iPhone SE)
+                                HStack(spacing: 8) {
                                     Button {
                                         shareProtectedImage()
                                     } label: {
-                                        HStack(spacing: 6) {
+                                        HStack(spacing: 5) {
                                             Image(systemName: "square.and.arrow.up.fill")
                                             Text(strings.shareButton)
-                                                .font(.system(size: appFontSize, weight: .semibold))
+                                                .font(.system(size: min(appFontSize, 13), weight: .semibold))
+                                                .lineLimit(1)
+                                                .minimumScaleFactor(0.75)
                                         }
                                         .frame(maxWidth: .infinity)
                                         .padding(.vertical, 10)
@@ -350,10 +364,12 @@ struct ContentView: View {
                                     Button {
                                         printProtectedImage()
                                     } label: {
-                                        HStack(spacing: 6) {
+                                        HStack(spacing: 5) {
                                             Image(systemName: "printer.fill")
                                             Text(strings.printButton)
-                                                .font(.system(size: appFontSize, weight: .semibold))
+                                                .font(.system(size: min(appFontSize, 13), weight: .semibold))
+                                                .lineLimit(1)
+                                                .minimumScaleFactor(0.75)
                                         }
                                         .frame(maxWidth: .infinity)
                                         .padding(.vertical, 10)
@@ -363,15 +379,17 @@ struct ContentView: View {
                                     .disabled(isSavingImage || isAnalyzingVision)
                                 }
 
-                                // Fila 2: Copiar al Portapapeles y Cambiar Foto
-                                HStack(spacing: 12) {
+                                // Fila 2: Copiar al Portapapeles y Cambiar Foto (Responsivo para iPhone SE)
+                                HStack(spacing: 8) {
                                     Button {
                                         copyProtectedImageToClipboard()
                                     } label: {
-                                        HStack(spacing: 6) {
+                                        HStack(spacing: 5) {
                                             Image(systemName: "doc.on.doc.fill")
                                             Text(strings.copyClipboardButton)
-                                                .font(.system(size: appFontSize, weight: .semibold))
+                                                .font(.system(size: min(appFontSize, 13), weight: .semibold))
+                                                .lineLimit(1)
+                                                .minimumScaleFactor(0.7)
                                         }
                                         .frame(maxWidth: .infinity)
                                         .padding(.vertical, 10)
@@ -382,10 +400,12 @@ struct ContentView: View {
                                     Button {
                                         clearSelectedMedia()
                                     } label: {
-                                        HStack(spacing: 6) {
+                                        HStack(spacing: 5) {
                                             Image(systemName: "photo.badge.plus")
                                             Text(strings.changePhotoButton)
-                                                .font(.system(size: appFontSize, weight: .semibold))
+                                                .font(.system(size: min(appFontSize, 13), weight: .semibold))
+                                                .lineLimit(1)
+                                                .minimumScaleFactor(0.75)
                                         }
                                         .frame(maxWidth: .infinity)
                                         .padding(.vertical, 10)
@@ -428,7 +448,8 @@ struct ContentView: View {
                         fontSize: appFontSize
                     )
                 }
-                .padding()
+                .padding(.horizontal, 12)
+                .padding(.vertical, 16)
             }
             .navigationTitle("PrivaLock")
             .toolbar {
@@ -1497,13 +1518,19 @@ struct SecurityFeaturesListView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text(strings.securityFeaturesTitle)
-                    .font(.system(size: fontSize + 1, weight: .bold))
-                Spacer()
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text(strings.securityFeaturesTitle)
+                        .font(.system(size: fontSize + 1, weight: .bold))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                    Spacer()
+                }
                 Text(strings.securityFeaturesSubtitle)
                     .font(.caption2)
                     .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
             }
 
             VStack(spacing: 8) {
