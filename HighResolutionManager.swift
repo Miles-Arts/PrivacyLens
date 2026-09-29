@@ -77,19 +77,21 @@ final class HighResolutionManager: @unchecked Sendable {
 
     // MARK: - Procesamiento y Renderizado de Documentos PDF
 
-    /// Renderiza la primera página de un documento PDF con resolución nítida para reconocimiento OCR.
-    ///
-    /// - Parameters:
-    ///   - url: URL del archivo PDF en el sistema de archivos.
-    ///   - targetWidth: Ancho objetivo para el renderizado vectorial a raster.
-    /// - Returns: `PlatformImage` correspondiente a la página rasterizada.
-    func renderFirstPageOfPDF(at url: URL, targetWidth: CGFloat = 2048) -> PlatformImage? {
+    /// Obtiene el número total de páginas contenidas en un documento PDF.
+    func getPDFPageCount(at url: URL) -> Int {
+        guard let pdfDocument = PDFDocument(url: url) else { return 0 }
+        return pdfDocument.pageCount
+    }
+
+    /// Renderiza una página específica (0-indexed) de un documento PDF con resolución nítida para OCR.
+    func renderPDFPage(at url: URL, pageIndex: Int, targetWidth: CGFloat = 2048) -> PlatformImage? {
         guard let pdfDocument = PDFDocument(url: url),
-              let firstPage = pdfDocument.page(at: 0) else {
+              pageIndex >= 0, pageIndex < pdfDocument.pageCount,
+              let page = pdfDocument.page(at: pageIndex) else {
             return nil
         }
 
-        let pageBounds = firstPage.bounds(for: .mediaBox)
+        let pageBounds = page.bounds(for: .mediaBox)
         let scale = targetWidth / pageBounds.width
         let targetSize = CGSize(width: targetWidth, height: pageBounds.height * scale)
 
@@ -105,7 +107,7 @@ final class HighResolutionManager: @unchecked Sendable {
         context.fill(CGRect(origin: .zero, size: targetSize))
 
         context.scaleBy(x: scale, y: scale)
-        firstPage.draw(with: .mediaBox, to: context)
+        page.draw(with: .mediaBox, to: context)
         image.unlockFocus()
         return image
 
@@ -117,9 +119,14 @@ final class HighResolutionManager: @unchecked Sendable {
 
             ctx.cgContext.translateBy(x: 0.0, y: targetSize.height)
             ctx.cgContext.scaleBy(x: scale, y: -scale)
-            firstPage.draw(with: .mediaBox, to: ctx.cgContext)
+            page.draw(with: .mediaBox, to: ctx.cgContext)
         }
         #endif
+    }
+
+    /// Renderiza la primera página de un documento PDF (compatibilidad retroactiva).
+    func renderFirstPageOfPDF(at url: URL, targetWidth: CGFloat = 2048) -> PlatformImage? {
+        return renderPDFPage(at: url, pageIndex: 0, targetWidth: targetWidth)
     }
 
     // MARK: - Auditoría de Memoria RAM (En Vivo)

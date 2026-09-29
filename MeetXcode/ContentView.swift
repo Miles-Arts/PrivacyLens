@@ -63,6 +63,9 @@ struct ContentView: View {
     @State private var isPhotoPickerPresented: Bool = false
     @State private var isDocumentPickerPresented: Bool = false
     @State private var loadedImage: PlatformImage?
+    @State private var loadedDocumentURL: URL?
+    @State private var currentPDFPageIndex: Int = 0
+    @State private var totalPDFPages: Int = 1
     @State private var customExportFileName: String = ""
     @State private var isLoadingMedia: Bool = false
     @State private var isAnalyzingVision: Bool = false
@@ -117,6 +120,44 @@ struct ContentView: View {
                                 }
                             }
                             .padding(.horizontal, 4)
+
+                            // Barra de Navegación de Páginas para Documentos PDF Multipágina
+                            if totalPDFPages > 1 {
+                                HStack {
+                                    Button {
+                                        switchPDFPage(to: currentPDFPageIndex - 1)
+                                    } label: {
+                                        Image(systemName: "chevron.left.circle.fill")
+                                            .font(.system(size: 20))
+                                    }
+                                    .buttonStyle(.plain)
+                                    .disabled(currentPDFPageIndex <= 0)
+                                    .foregroundStyle(currentPDFPageIndex <= 0 ? Color.secondary.opacity(0.3) : Color.blue)
+
+                                    Spacer()
+
+                                    Text(strings.pdfPageIndicator(current: currentPDFPageIndex + 1, total: totalPDFPages))
+                                        .font(.system(size: appFontSize, weight: .bold))
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 4)
+                                        .background(Color.secondary.opacity(0.12), in: Capsule())
+
+                                    Spacer()
+
+                                    Button {
+                                        switchPDFPage(to: currentPDFPageIndex + 1)
+                                    } label: {
+                                        Image(systemName: "chevron.right.circle.fill")
+                                            .font(.system(size: 20))
+                                    }
+                                    .buttonStyle(.plain)
+                                    .disabled(currentPDFPageIndex >= totalPDFPages - 1)
+                                    .foregroundStyle(currentPDFPageIndex >= totalPDFPages - 1 ? Color.secondary.opacity(0.3) : Color.blue)
+                                }
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 6)
+                                .background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 10))
+                            }
 
                             // Toolbar de Modos, Dibujo Manual y Estilo Global (Adaptable y Responsiva)
                             VStack(spacing: 12) {
@@ -506,6 +547,18 @@ struct ContentView: View {
             isLoadingMedia = true
             errorMessage = nil
 
+            // Verificar si es PDF para registrar el total de páginas
+            if selectedURL.pathExtension.lowercased() == "pdf" {
+                let pages = HighResolutionManager.shared.getPDFPageCount(at: selectedURL)
+                self.totalPDFPages = max(1, pages)
+                self.currentPDFPageIndex = 0
+                self.loadedDocumentURL = selectedURL
+            } else {
+                self.totalPDFPages = 1
+                self.currentPDFPageIndex = 0
+                self.loadedDocumentURL = nil
+            }
+
             if let optimizedImage = HighResolutionManager.shared.loadOptimizedImage(from: selectedURL) {
                 let resources = try? selectedURL.resourceValues(forKeys: [.fileSizeKey])
                 let fileSize = Int64(resources?.fileSize ?? 0)
@@ -524,6 +577,26 @@ struct ContentView: View {
         } catch {
             isLoadingMedia = false
             errorMessage = error.localizedDescription
+        }
+    }
+
+    private func switchPDFPage(to pageIndex: Int) {
+        guard let url = loadedDocumentURL,
+              pageIndex >= 0, pageIndex < totalPDFPages else { return }
+
+        guard url.startAccessingSecurityScopedResource() else { return }
+        defer { url.stopAccessingSecurityScopedResource() }
+
+        isLoadingMedia = true
+        if let newPageImage = HighResolutionManager.shared.renderPDFPage(at: url, pageIndex: pageIndex) {
+            self.currentPDFPageIndex = pageIndex
+            self.loadedImage = newPageImage
+            self.isLoadingMedia = false
+            self.resetCanvasTransform()
+            self.analyzeLoadedImage(newPageImage)
+            HapticManager.selection()
+        } else {
+            self.isLoadingMedia = false
         }
     }
 
@@ -721,6 +794,9 @@ struct ContentView: View {
     private func clearSelectedMedia() {
         selectedPhotoItem = nil
         loadedImage = nil
+        loadedDocumentURL = nil
+        currentPDFPageIndex = 0
+        totalPDFPages = 1
         redactedImage = nil
         detectedRegions.removeAll()
         undoStack.removeAll()
