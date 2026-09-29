@@ -151,7 +151,8 @@ struct InteractiveRegionBox: View {
         }
         .frame(width: rect.width, height: rect.height)
         .position(x: rect.midX, y: rect.midY)
-        .contentShape(Rectangle())
+        // Hit-Testing: Expande el área táctil invisible a un mínimo de 44x44 pt (Apple HIG)
+        .contentShape(Rectangle().size(width: max(rect.width, 44), height: max(rect.height, 44)))
         // 1. Doble toque: Alterna rápidamente el estado protegido / desprotegido
         .onTapGesture(count: 2) {
             region.isEnabled.toggle()

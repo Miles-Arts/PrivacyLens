@@ -71,6 +71,8 @@ struct ContentView: View {
 
     // MARK: - Estado de Detección y Redacción
     @State private var detectedRegions: [DetectedPrivacyRegion] = []
+    @State private var undoStack: [[DetectedPrivacyRegion]] = []
+    @State private var redoStack: [[DetectedPrivacyRegion]] = []
     @State private var selectedRedactionStyle: RedactionStyle = .blackBar
     @State private var currentViewMode: ViewMode = .redactedPreview
     @State private var redactedImage: PlatformImage?
@@ -177,6 +179,31 @@ struct ContentView: View {
                                         .tint(isManualDrawingActive ? .orange : .blue)
 
                                         Spacer()
+
+                                        // Botones de Deshacer y Rehacer (Undo / Redo)
+                                        HStack(spacing: 4) {
+                                            Button {
+                                                undoLastAction()
+                                            } label: {
+                                                Image(systemName: "arrow.uturn.backward.circle.fill")
+                                                    .font(.system(size: 18))
+                                            }
+                                            .buttonStyle(.plain)
+                                            .foregroundStyle(undoStack.isEmpty ? Color.secondary.opacity(0.3) : Color.blue)
+                                            .disabled(undoStack.isEmpty)
+                                            .help(strings.undoButton)
+
+                                            Button {
+                                                redoLastAction()
+                                            } label: {
+                                                Image(systemName: "arrow.uturn.forward.circle.fill")
+                                                    .font(.system(size: 18))
+                                            }
+                                            .buttonStyle(.plain)
+                                            .foregroundStyle(redoStack.isEmpty ? Color.secondary.opacity(0.3) : Color.blue)
+                                            .disabled(redoStack.isEmpty)
+                                            .help(strings.redoButton)
+                                        }
 
                                         Picker("", selection: $selectedRedactionStyle) {
                                             ForEach(RedactionStyle.allCases) { style in
@@ -517,6 +544,8 @@ struct ContentView: View {
 
                 await MainActor.run {
                     self.detectedRegions = regions
+                    self.undoStack.removeAll()
+                    self.redoStack.removeAll()
                     self.isAnalyzingVision = false
                     self.updateRedactedImage()
                 }
@@ -554,9 +583,36 @@ struct ContentView: View {
         redactedImage = result
     }
 
+    // MARK: - Historial Deshacer / Rehacer (Undo / Redo)
+
+    private func recordUndoState() {
+        undoStack.append(detectedRegions)
+        if undoStack.count > 25 {
+            undoStack.removeFirst()
+        }
+        redoStack.removeAll()
+    }
+
+    private func undoLastAction() {
+        guard let previous = undoStack.popLast() else { return }
+        redoStack.append(detectedRegions)
+        detectedRegions = previous
+        HapticManager.impact(.light)
+        updateRedactedImage()
+    }
+
+    private func redoLastAction() {
+        guard let next = redoStack.popLast() else { return }
+        undoStack.append(detectedRegions)
+        detectedRegions = next
+        HapticManager.impact(.light)
+        updateRedactedImage()
+    }
+
     // MARK: - Dibujo Manual e Interacción
 
     private func addManualRegion(_ normalizedRect: CGRect) {
+        recordUndoState()
         let newRegion = DetectedPrivacyRegion(
             type: .manual,
             category: .generalText,
@@ -572,6 +628,7 @@ struct ContentView: View {
     private func toggleCategory(_ category: SensitiveDataCategory) {
         let matching = detectedRegions.filter { $0.category == category }
         guard !matching.isEmpty else { return }
+        recordUndoState()
 
         let shouldEnable = !matching.allSatisfy { $0.isEnabled }
         for index in detectedRegions.indices where detectedRegions[index].category == category {
@@ -666,6 +723,8 @@ struct ContentView: View {
         loadedImage = nil
         redactedImage = nil
         detectedRegions.removeAll()
+        undoStack.removeAll()
+        redoStack.removeAll()
         customExportFileName = ""
         errorMessage = nil
         successMessage = nil
