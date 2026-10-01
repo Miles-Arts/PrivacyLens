@@ -32,6 +32,15 @@ enum RedactionStyle: String, CaseIterable, Identifiable, Sendable {
         case .pixelate: return "checkerboard.rectangle"
         }
     }
+
+    /// Título corto optimizado para barras de herramientas compactas en pantallas pequeñas.
+    var shortTitle: String {
+        switch self {
+        case .blackBar: return "Barra Negra"
+        case .blur: return "Desenfoque"
+        case .pixelate: return "Pixelado"
+        }
+    }
 }
 
 /// Motor gráfico especializado en el aplanado físico de píxeles (destructive flattening)

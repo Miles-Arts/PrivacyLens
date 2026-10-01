@@ -29,6 +29,7 @@ struct PrivaLockCanvasContainer: View {
     @Binding var dragTranslation: CGSize
     let strings: AppStrings
     let fontSize: Double
+    var onWillModifyRegion: (() -> Void)? = nil
     let onAddManualRegion: (CGRect) -> Void
     let onDragEnded: (CGSize) -> Void
 
@@ -71,6 +72,7 @@ struct PrivaLockCanvasContainer: View {
                                 regions: $detectedRegions,
                                 globalStyle: selectedRedactionStyle,
                                 isManualDrawingActive: isManualDrawingActive,
+                                onWillModifyRegion: onWillModifyRegion,
                                 onAddManualRegion: onAddManualRegion
                             )
                         }
@@ -86,6 +88,7 @@ struct PrivaLockCanvasContainer: View {
                                 regions: $detectedRegions,
                                 globalStyle: selectedRedactionStyle,
                                 isManualDrawingActive: isManualDrawingActive,
+                                onWillModifyRegion: onWillModifyRegion,
                                 onAddManualRegion: onAddManualRegion
                             )
                         }

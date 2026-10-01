@@ -178,54 +178,81 @@ struct ContentView: View {
                                 }
                                 .pickerStyle(.segmented)
 
-                                // Barra de Herramientas Compacta y Perfectamente Escalada para iPhone SE
-                                HStack(spacing: 6) {
-                                    // 1. Botón Dibujar Recuadro / Cancelar
+                                // Barra de Herramientas Compacta y Perfectamente Diseñada bajo Apple HIG para iPhone SE
+                                HStack(spacing: 8) {
+                                    // 1. Botón Dibujar Recuadro / Cancelar (Etiqueta concisa para evitar truncamiento)
                                     Button {
                                         isManualDrawingActive.toggle()
                                     } label: {
-                                        HStack(spacing: 4) {
+                                        HStack(spacing: 5) {
                                             Image(systemName: isManualDrawingActive ? "xmark.circle.fill" : "hand.draw.fill")
                                                 .font(.system(size: 13, weight: .bold))
-                                            Text(isManualDrawingActive ? strings.cancelDrawingButton : strings.drawBoxButton)
-                                                .font(.system(size: min(appFontSize, 12), weight: .semibold))
+                                            Text(isManualDrawingActive ? "Cancelar" : "Dibujar")
+                                                .font(.system(size: min(appFontSize, 13), weight: .semibold))
                                                 .lineLimit(1)
-                                                .minimumScaleFactor(0.8)
                                         }
-                                        .padding(.horizontal, 8)
-                                        .padding(.vertical, 6)
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 7)
                                     }
                                     .buttonStyle(.borderedProminent)
                                     .tint(isManualDrawingActive ? .orange : .blue)
+                                    .accessibilityLabel(isManualDrawingActive ? strings.cancelDrawingButton : strings.drawBoxButton)
 
-                                    // 2. Botones de Deshacer y Rehacer (Undo / Redo)
-                                    HStack(spacing: 4) {
+                                    Spacer(minLength: 2)
+
+                                    // 2. Botones de Deshacer y Rehacer (Undo / Redo) - Patrón de Diseño Apple HIG
+                                    // - Contenedor circular nítido con stroke y contraste accesible
+                                    // - Iconos SF Symbols nativos (arrow.uturn.backward / forward)
+                                    // - Hit-testing estándar Apple de 44x44 pt
+                                    HStack(spacing: 6) {
                                         Button {
                                             undoLastAction()
                                         } label: {
-                                            Image(systemName: "arrow.uturn.backward.circle.fill")
-                                                .font(.system(size: 19))
+                                            ZStack {
+                                                Circle()
+                                                    .fill(undoStack.isEmpty ? Color(white: 0.18) : Color.blue.opacity(0.2))
+                                                    .frame(width: 34, height: 34)
+                                                    .overlay(
+                                                        Circle()
+                                                            .stroke(undoStack.isEmpty ? Color.white.opacity(0.18) : Color.blue.opacity(0.5), lineWidth: 1)
+                                                    )
+                                                Image(systemName: "arrow.uturn.backward")
+                                                    .font(.system(size: 14, weight: .bold))
+                                                    .foregroundStyle(undoStack.isEmpty ? Color(white: 0.5) : Color.blue)
+                                            }
+                                            .contentShape(Rectangle().size(width: 44, height: 44))
                                         }
                                         .buttonStyle(.plain)
-                                        .foregroundStyle(undoStack.isEmpty ? Color.secondary.opacity(0.25) : Color.blue)
                                         .disabled(undoStack.isEmpty)
                                         .help(strings.undoButton)
+                                        .accessibilityLabel(strings.undoButton)
 
                                         Button {
                                             redoLastAction()
                                         } label: {
-                                            Image(systemName: "arrow.uturn.forward.circle.fill")
-                                                .font(.system(size: 19))
+                                            ZStack {
+                                                Circle()
+                                                    .fill(redoStack.isEmpty ? Color(white: 0.18) : Color.blue.opacity(0.2))
+                                                    .frame(width: 34, height: 34)
+                                                    .overlay(
+                                                        Circle()
+                                                            .stroke(redoStack.isEmpty ? Color.white.opacity(0.18) : Color.blue.opacity(0.5), lineWidth: 1)
+                                                    )
+                                                Image(systemName: "arrow.uturn.forward")
+                                                    .font(.system(size: 14, weight: .bold))
+                                                    .foregroundStyle(redoStack.isEmpty ? Color(white: 0.5) : Color.blue)
+                                            }
+                                            .contentShape(Rectangle().size(width: 44, height: 44))
                                         }
                                         .buttonStyle(.plain)
-                                        .foregroundStyle(redoStack.isEmpty ? Color.secondary.opacity(0.25) : Color.blue)
                                         .disabled(redoStack.isEmpty)
                                         .help(strings.redoButton)
+                                        .accessibilityLabel(strings.redoButton)
                                     }
 
-                                    Spacer(minLength: 4)
+                                    Spacer(minLength: 2)
 
-                                    // 3. Selector de Estilo de Redacción con Menú Desplegable Compacto
+                                    // 3. Selector de Estilo de Redacción con Menú Desplegable Compacto Apple HIG
                                     Menu {
                                         ForEach(RedactionStyle.allCases) { style in
                                             Button {
@@ -236,19 +263,23 @@ struct ContentView: View {
                                             }
                                         }
                                     } label: {
-                                        HStack(spacing: 4) {
+                                        HStack(spacing: 5) {
                                             Image(systemName: selectedRedactionStyle.iconName)
-                                                .font(.system(size: 11))
-                                            Text(selectedRedactionStyle.rawValue)
-                                                .font(.system(size: min(appFontSize, 11), weight: .medium))
+                                                .font(.system(size: 12, weight: .semibold))
+                                            Text(selectedRedactionStyle.shortTitle)
+                                                .font(.system(size: min(appFontSize, 12), weight: .medium))
                                                 .lineLimit(1)
                                             Image(systemName: "chevron.up.chevron.down")
-                                                .font(.system(size: 9))
+                                                .font(.system(size: 10, weight: .bold))
                                                 .foregroundStyle(.secondary)
                                         }
-                                        .padding(.horizontal, 8)
-                                        .padding(.vertical, 6)
-                                        .background(Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
+                                        .padding(.horizontal, 9)
+                                        .padding(.vertical, 7)
+                                        .background(Color(white: 0.18), in: RoundedRectangle(cornerRadius: 8))
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 8)
+                                                .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                                        )
                                     }
                                     .lineLimit(1)
                                 }
@@ -269,6 +300,9 @@ struct ContentView: View {
                                     dragTranslation: $dragTranslation,
                                     strings: strings,
                                     fontSize: appFontSize,
+                                    onWillModifyRegion: {
+                                        recordUndoState()
+                                    },
                                     onAddManualRegion: { rect in
                                         addManualRegion(rect)
                                     },
@@ -493,6 +527,9 @@ struct ContentView: View {
                 handlePhotoSelection(newItem)
             }
             .onChange(of: selectedRedactionStyle) { _, _ in
+                updateRedactedImage()
+            }
+            .onChange(of: detectedRegions) { _, _ in
                 updateRedactedImage()
             }
             .onChange(of: isDetectFacesEnabled) { _, _ in reanalyzeImage() }

@@ -16,6 +16,7 @@ struct InteractiveRegionOverlayView: View {
     @Binding var regions: [DetectedPrivacyRegion]
     let globalStyle: RedactionStyle
     let isManualDrawingActive: Bool
+    var onWillModifyRegion: (() -> Void)? = nil
     let onAddManualRegion: (CGRect) -> Void
 
     @State private var dragStartLocation: CGPoint?
@@ -30,7 +31,9 @@ struct InteractiveRegionOverlayView: View {
                         region: $region,
                         globalStyle: globalStyle,
                         containerSize: proxy.size,
+                        onWillModify: onWillModifyRegion,
                         onDelete: {
+                            onWillModifyRegion?()
                             if let index = regions.firstIndex(where: { $0.id == region.id }) {
                                 regions.remove(at: index)
                                 HapticManager.impact(.medium)
@@ -99,6 +102,7 @@ struct InteractiveRegionBox: View {
     @Binding var region: DetectedPrivacyRegion
     let globalStyle: RedactionStyle
     let containerSize: CGSize
+    var onWillModify: (() -> Void)? = nil
     let onDelete: () -> Void
 
     @State private var isMenuPresented: Bool = false
@@ -155,6 +159,7 @@ struct InteractiveRegionBox: View {
         .contentShape(Rectangle().size(width: max(rect.width, 44), height: max(rect.height, 44)))
         // 1. Doble toque: Alterna rápidamente el estado protegido / desprotegido
         .onTapGesture(count: 2) {
+            onWillModify?()
             region.isEnabled.toggle()
             HapticManager.selection()
         }
@@ -167,6 +172,7 @@ struct InteractiveRegionBox: View {
         .popover(isPresented: $isMenuPresented, arrowEdge: .top) {
             RegionActionMenuView(
                 region: $region,
+                onWillModify: onWillModify,
                 onDismiss: { isMenuPresented = false },
                 onDelete: onDelete
             )
@@ -174,6 +180,7 @@ struct InteractiveRegionBox: View {
         // Menú secundario nativo para clic derecho o pulsación larga
         .contextMenu {
             Button {
+                onWillModify?()
                 region.isEnabled.toggle()
                 HapticManager.selection()
             } label: {
@@ -183,6 +190,7 @@ struct InteractiveRegionBox: View {
             Divider()
 
             Button {
+                onWillModify?()
                 region.customStyle = .blackBar
                 region.isEnabled = true
                 HapticManager.selection()
@@ -191,6 +199,7 @@ struct InteractiveRegionBox: View {
             }
 
             Button {
+                onWillModify?()
                 region.customStyle = .blur
                 region.isEnabled = true
                 HapticManager.selection()
@@ -199,6 +208,7 @@ struct InteractiveRegionBox: View {
             }
 
             Button {
+                onWillModify?()
                 region.customStyle = .pixelate
                 region.isEnabled = true
                 HapticManager.selection()
@@ -207,6 +217,7 @@ struct InteractiveRegionBox: View {
             }
 
             Button {
+                onWillModify?()
                 region.customStyle = nil
                 HapticManager.selection()
             } label: {
@@ -245,6 +256,7 @@ struct InteractiveRegionBox: View {
 /// Menú flotante interactivo que aparece al pulsar sobre un recuadro.
 struct RegionActionMenuView: View {
     @Binding var region: DetectedPrivacyRegion
+    var onWillModify: (() -> Void)? = nil
     let onDismiss: () -> Void
     let onDelete: () -> Void
 
@@ -267,6 +279,7 @@ struct RegionActionMenuView: View {
             Divider()
 
             Button {
+                onWillModify?()
                 region.isEnabled.toggle()
                 HapticManager.selection()
                 onDismiss()
@@ -280,6 +293,7 @@ struct RegionActionMenuView: View {
             .buttonStyle(.plain)
 
             Button {
+                onWillModify?()
                 region.customStyle = .blackBar
                 region.isEnabled = true
                 HapticManager.selection()
@@ -291,6 +305,7 @@ struct RegionActionMenuView: View {
             .buttonStyle(.plain)
 
             Button {
+                onWillModify?()
                 region.customStyle = .blur
                 region.isEnabled = true
                 HapticManager.selection()
@@ -302,6 +317,7 @@ struct RegionActionMenuView: View {
             .buttonStyle(.plain)
 
             Button {
+                onWillModify?()
                 region.customStyle = .pixelate
                 region.isEnabled = true
                 HapticManager.selection()
@@ -313,6 +329,7 @@ struct RegionActionMenuView: View {
             .buttonStyle(.plain)
 
             Button {
+                onWillModify?()
                 region.customStyle = nil
                 HapticManager.selection()
                 onDismiss()
