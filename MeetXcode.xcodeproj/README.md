@@ -6,22 +6,34 @@
 [![Frameworks](https://img.shields.io/badge/Frameworks-SwiftUI%20%7C%20Vision%20%7C%20PDFKit%20%7C%20ImageIO-purple.svg)](https://developer.apple.com)
 [![Privacy](https://img.shields.io/badge/Privacy-100%25%20On--Device%20(Zero--Telemetry)-success.svg)](#-blindaje-de-seguridad-anti-rastreo-y-cero-telemetría)
 [![SQL-Injection](https://img.shields.io/badge/SQL%20Injection-Immune%20(No%20SQL)-brightgreen.svg)](#inmunidad-contra-inyecciones-sql)
+[![Demo Video](https://img.shields.io/badge/YouTube-Video%20Demo-red.svg?logo=youtube&logoColor=white)](https://youtube.com/shorts/lp8CypBM7_E)
 
 **PrivaLock** es una aplicación multiplataforma de grado profesional para macOS y iOS concebida bajo el estándar internacional de **Privacidad por Diseño (*Privacy by Design*)**. Su propósito fundamental es detectar, ofuscar y neutralizar de forma irreversible información privada, sensible o confidencial (rostros humanos, cédulas de ciudadanía/DNI, pasaportes, correos electrónicos, números telefónicos, códigos QR/barras y números de cuenta o tarjetas bancarias) en fotos, capturas de pantalla y documentos escaneados antes de ser compartidos en internet, WhatsApp, correo electrónico o enviados a impresión física o digital.
 
 ---
 
 ## 📑 Tabla de Contenidos
-1. [Visión General y Filosofía](#-visión-general-y-filosofía)
-2. [Arquitectura del Sistema](#-arquitectura-del-sistema)
-3. [Blindaje de Seguridad, Anti-Rastreo y Cero Telemetría](#-blindaje-de-seguridad-anti-rastreo-y-cero-telemetría)
-4. [Características Principales](#-características-principales)
-5. [Compartir e Impresión Nativa](#-compartir-e-impresión-nativa)
-6. [Catálogo de Módulos y Código Fuente](#-catálogo-de-módulos-y-código-fuente)
-7. [Controles, Gestos e Interacción en el Lienzo](#-controles-gestos-e-interacción-en-el-lienzo)
-8. [Auditoría de Rendimiento: Documentos Pesados (48MP+) y PDFs](#-auditoría-de-rendimiento-documentos-pesados-48mp-y-pdfs)
-9. [Internacionalización y Accesibilidad Tipográfica](#-internacionalización-y-accesibilidad-tipográfica)
-10. [Compilación, Entorno y Calidad de Código](#-compilación-entorno-y-calidad-de-código)
+1. [Video Demostración](#-video-demostración)
+2. [Visión General y Filosofía](#-visión-general-y-filosofía)
+3. [Arquitectura del Sistema](#-arquitectura-del-sistema)
+4. [Blindaje de Seguridad, Anti-Rastreo y Cero Telemetría](#-blindaje-de-seguridad-anti-rastreo-y-cero-telemetría)
+5. [Características Principales](#-características-principales)
+6. [Compartir e Impresión Nativa](#-compartir-e-impresión-nativa)
+7. [Catálogo de Módulos y Código Fuente](#-catálogo-de-módulos-y-código-fuente)
+8. [Controles, Gestos e Interacción en el Lienzo](#-controles-gestos-e-interacción-en-el-lienzo)
+9. [Auditoría de Rendimiento: Documentos Pesados (48MP+) y PDFs](#-auditoría-de-rendimiento-documentos-pesados-48mp-y-pdfs)
+10. [Internacionalización y Accesibilidad Tipográfica](#-internacionalización-y-accesibilidad-tipográfica)
+11. [Compilación, Entorno y Calidad de Código](#-compilación-entorno-y-calidad-de-código)
+
+---
+
+## 🎬 Video Demostración
+
+Mira a **PrivaLock** en acción protegiendo documentos, imágenes y datos sensibles en tiempo real:
+
+[![Ver demostración en YouTube](https://img.shields.io/badge/YouTube%20Shorts-Ver%20Video%20Demostraci%C3%B3n-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtube.com/shorts/lp8CypBM7_E)
+
+🔗 **Enlace del video:** [https://youtube.com/shorts/lp8CypBM7_E](https://youtube.com/shorts/lp8CypBM7_E)
 
 ---
 
@@ -157,7 +169,8 @@ PrivaLock cuenta con integración nativa con los subsistemas de compartición de
 ```
 MeetXcode/
 ├── MeetXcodeApp.swift          # Ciclo de vida de la app, inyección de icono en Dock y blindaje de pantalla
-├── ContentView.swift           # Interfaz principal, lienzo fotográfico, barra de zoom y modal de ajustes
+├── ContentView.swift           # Flujo principal, gestión de estado y pipeline de redacción
+├── PrivaLockComponents.swift   # Subvistas modulares (Lienzo, Zoom, Ajustes, Resumen Vision, Banners)
 ├── PlatformExtensions.swift    # Abstracción multiplataforma unificada (NSImage/UIImage, CGImage, Image)
 ├── PrivacyDetector.swift       # Actor concurrente de Vision AI (Rostros, OCR, Códigos de barras)
 ├── SensitiveDataDetector.swift # Clasificador algorítmico NER y Regex para datos personales sensibles
